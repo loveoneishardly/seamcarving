@@ -161,9 +161,16 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 .w3-sub-green,.w3-sub-green:hover{color:#fff!important;background-color:rgb(38, 153, 199)!important;text-align: left;}
 .w3-sub-container h1{padding-left: 5px;font-size: 22px;}
 .image_original{
-  width: 500px;
+  max-width: 100%;
   height: auto;
-  background-color: #ddf0f0;
+  position: relative;
+  overflow: hidden;
+  /*background-color: #ddf0f0;*/
+}
+.image_original .original_display {
+  width: 810px;
+  height: 383px;
+  display: block;
 }
 .image_seamcarving{
   max-width: 1200px;
@@ -171,10 +178,6 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
   width: 500px;
   height: 300px;
   background-color: #ddf0f0;
-}
-.original{
-  width: auto;
-  height: auto;
 }
 
 .w3-light-green,.w3-hover-light-green:hover{color:#000!important;background-color:#8bc34a!important}

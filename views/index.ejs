@@ -35,9 +35,10 @@
                     </tr>
                     <tr>
                         <td align="center">
-                            <img src="./upload/image.jpg" class="original" alt="Original" id="original" hidden="true">
-                            <canvas id="image_canvas"></canvas>
-                            <div class="image_original"> </div>
+                            <div class="image_original">
+                                <img src="./upload/image.jpg" class="original" alt="Original" id="original" hidden="true">
+                                <img src="./upload/image.jpg" class="original_display" alt="Original" id="original_display">
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -49,7 +50,36 @@
                     </tr>
                     <tr>
                         <td align="center">
-                            <div class="image_seamcarving"></div>
+                            <div class="image_original">
+                                <canvas id="image_canvas"></canvas>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table style="width: 100%; height: 100%;" border="0">
+                                <tr>
+                                    <td style="width: 49%;">
+                                        <div class="w3-sub-container w3-sub-green">
+                                            <h1>Enery Map</h1> 
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="w3-sub-container w3-sub-green">
+                                            <h1>Seam Lowest Enery</h1> 
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <canvas id="image_enerymap"></canvas>
+                                    </td>
+                                    <td>
+                                        <canvas id="image_seam_lowest_enery"></canvas>
+                                    </td>
+                                </tr>
+                            </table>
+                            
                         </td>
                     </tr>
                 </table>

@@ -2,15 +2,31 @@ const img = document.getElementById('original');
 const canvas = document.getElementById('image_canvas');
 const ctx = canvas.getContext('2d');
 
+const canvas_enery = document.getElementById('image_enerymap');
+const ctx_enery = canvas_enery.getContext('2d');
+
+const canvas_seam_lowest_enery = document.getElementById('image_seam_lowest_enery');
+const ctx_seam_lowest_enery = canvas_seam_lowest_enery.getContext('2d');
+
 let isDrawing = false;
 var maskData = []; // Lưu trữ thông tin về mask đã vẽ   
 
 // Set canvas width and height to match the image
-canvas.width = img.width;
-canvas.height = img.height;
+var newWidth  = 810;
+var newHeight  = 383;
+
+canvas.width = newWidth;
+canvas.height = newHeight;
+
+canvas_enery.width = newWidth;
+canvas_enery.height = newHeight;
+
+canvas_seam_lowest_enery.width = newWidth;
+canvas_seam_lowest_enery.height = newHeight;
 
 // Draw the image on the canvas
-ctx.drawImage(img, 0, 0);
+ctx.drawImage(img, 0, 0, newWidth, newHeight);
+ctx_seam_lowest_enery.drawImage(img, 0, 0, newWidth, newHeight);
 
 // Event listener for when the mouse button is pressed down
 canvas.addEventListener('mousedown', (e) => {
@@ -23,7 +39,7 @@ canvas.addEventListener('mousedown', (e) => {
 canvas.addEventListener('mousemove', (e) => {
     if (isDrawing) {
         ctx.lineTo(e.clientX - canvas.getBoundingClientRect().left, e.clientY - canvas.getBoundingClientRect().top);
-        ctx.lineWidth = 20; // Độ dày của nét vẽ
+        ctx.lineWidth = 10; // Độ dày của nét vẽ
         ctx.lineCap = 'round'; // Loại đầu nét vẽ
         ctx.strokeStyle = 'red'; // Màu sắc nét vẽ
         ctx.stroke();
@@ -43,26 +59,36 @@ canvas.addEventListener('mouseout', function() {
 });
 
 $(document).ready(function(){
-    $("#btn_seam_removal").click(function(){        
-        console.log(canvas.width);
-        console.log(canvas.height);
+    $("#btn_seam_removal").click(function(){   
         console.log('Thực hiện seam carving dựa trên mask:', maskData);
+        var newMask = createMaskFromCoordinates(canvas.width, canvas.height, maskData);
         var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        console.log(imageData);
         var pixels = imageData.data;
 
-        //for (var i = 0; i < 5; i++) {
-            var energyMap = calculateEnergyMap(ctx, canvas.width, canvas.height);
-            console.log(energyMap);
-            //drawEnergyMap(ctx, energyMap, canvas.width, canvas.height);
-            var lowEnerySeam = findLowestEnergySeam(energyMap, canvas.width, canvas.height);
-            console.log(lowEnerySeam);
-            //drawSeam(ctx, lowEnerySeam, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
-            // Loại bỏ seam từ hình ảnh
-            removeSeam(ctx, lowEnerySeam, canvas.width, canvas.height);
-            console.log(canvas.width);
-            console.log(canvas.height);
+        while (!isObjectRemoved(newMask)) {
+          var energyMap = calculateEnergyMapwithMask(ctx, newMask, canvas.width, canvas.height);
+          //drawEnergyMap(ctx_enery, energyMap, canvas.width, canvas.height);
+          var lowEnerySeam = findLowestEnergySeam(energyMap, canvas.width, canvas.height);
+          drawSeam(ctx_seam_lowest_enery, lowEnerySeam, canvas.width, canvas.height);
+
+          // Loại bỏ seam từ hình ảnh
+          removeSeam(ctx, lowEnerySeam, canvas.width, canvas.height);
+        }
+        // while (!isObjectRemoved(newMask)) {
+        //   var energyMap = calculateEnergyMapwithMask(ctx, newMask, canvas.width, canvas.height);
+        //   //drawEnergyMap(ctx_enery, energyMap, canvas.width, canvas.height);
+        //   var lowEnerySeam = findLowestEnergySeam(energyMap, canvas.width, canvas.height);
+        //   drawSeam(ctx_seam_lowest_enery, lowEnerySeam, canvas.width, canvas.height);
+
+        //   // Loại bỏ seam từ hình ảnh
+        //   removeSeam(ctx, lowEnerySeam, canvas.width, canvas.height);
+        // }
+        //for (var i = 0; i < 5; i++) { calculateEnergyMapwithMask
+            //var energyMap = calculateEnergyMap(ctx, canvas.width, canvas.height);
+           
         //}
         
     });
@@ -112,20 +138,20 @@ function calculateGradient(imageData, x, y, width, height) {
     return energyMap;
   }
 
-//   function drawEnergyMap(ctx, energyMap, width, height) {
-//     var maxEnergy = 1000; // Lấy giá trị năng lượng cao nhất
+  function drawEnergyMap(ctx, energyMap, width, height) {
+    var maxEnergy = 1000; // Lấy giá trị năng lượng cao nhất
   
-//     ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, width, height);
   
-//     for (var y = 0; y < height; y++) {
-//       for (var x = 0; x < width; x++) {
-//         var energy = energyMap[y * width + x];
-//         var colorValue = Math.floor((energy / maxEnergy) * 255);
-//         ctx.fillStyle = 'rgb(' + colorValue + ', ' + colorValue + ', ' + colorValue + ')';
-//         ctx.fillRect(x, y, 1, 1); // Vẽ từng pixel với màu sắc tương ứng với năng lượng
-//       }
-//     }
-//   }
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        var energy = energyMap[y * width + x];
+        var colorValue = Math.floor((energy / maxEnergy) * 255);
+        ctx.fillStyle = 'rgb(' + colorValue + ', ' + colorValue + ', ' + colorValue + ')';
+        ctx.fillRect(x, y, 1, 1); // Vẽ từng pixel với màu sắc tương ứng với năng lượng
+      }
+    }
+  }
 
   // Hàm tìm seam có năng lượng thấp nhất
 function findLowestEnergySeam(energyMap, width, height) {
@@ -179,17 +205,17 @@ function findLowestEnergySeam(energyMap, width, height) {
   }
   
 
-//   // Hàm vẽ seam lên canvas
-// function drawSeam(ctx, seam, width, height) {
-//     ctx.beginPath();
-//     ctx.strokeStyle = 'red';
+  // Hàm vẽ seam lên canvas
+function drawSeam(ctx, seam, width, height) {
+    ctx.beginPath();
+    ctx.strokeStyle = 'red';
     
-//     for (var y = 0; y < height; y++) {
-//       ctx.lineTo(seam[y], y);
-//     }
+    for (var y = 0; y < height; y++) {
+      ctx.lineTo(seam[y], y);
+    }
   
-//     ctx.stroke();
-//   }
+    ctx.stroke();
+  }
 
   // Hàm loại bỏ seam khỏi hình ảnh
   function removeSeam(ctx, seam, canvasWidth, canvasHeight) {
@@ -215,4 +241,81 @@ function findLowestEnergySeam(energyMap, width, height) {
     
     // Cập nhật ảnh mới sau khi xóa seam
     ctx.putImageData(imageData, 0, 0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function calculateEnergyMapwithMask(ctx, mask, width, height) {
+  var imageData = ctx.getImageData(0, 0, width, height).data;
+  var energyMap = [];
+
+  for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+          var maskValue = mask[y] !== undefined ? mask[y][x] : undefined;
+
+          if (maskValue !== undefined && maskValue < 0) {
+              energyMap.push(-999); // Đặt giá trị âm vô cùng lớn cho pixel thuộc mask
+          } else {
+              var energy = calculateGradient(imageData, x, y, width, height);
+              energyMap.push(energy);
+          }
+      }
+  }
+
+  return energyMap;
+}
+
+
+function createMaskFromCoordinates(width, height, coordinates) {
+  var newMask = [];
+
+  // Khởi tạo mask với giá trị mặc định
+  for (var y = 0; y < height; y++) {
+      newMask[y] = [];
+      for (var x = 0; x < width; x++) {
+          newMask[y][x] = 1; // Giá trị mặc định cho các pixel không thuộc mask là 1
+      }
+  }
+
+  // Đặt giá trị của các pixel từ tọa độ trong mask
+  for (var i = 0; i < coordinates.length; i++) {
+      var coord = coordinates[i];
+      var xCoord = Math.floor(coord.x);
+      var yCoord = Math.floor(coord.y);
+
+      // Đặt giá trị âm vô cùng lớn cho các pixel thuộc mask
+      if (xCoord >= 0 && xCoord < width && yCoord >= 0 && yCoord < height) {
+          newMask[yCoord][xCoord] = -1;
+      }
+  }
+
+  return newMask;
+}
+
+// Hàm kiểm tra xem đối tượng đã xóa chưa
+function isObjectRemoved(mask) {
+  for (var y = 0; y < mask.length; y++) {
+      for (var x = 0; x < mask[y].length; x++) {
+          if (mask[y][x]) {
+              // Nếu tìm thấy pixel thuộc đối tượng trong mask, return false (chưa biến mất)
+              console.log("000")
+              return false;
+          }
+      }
+  }
+  console.log("111")
+  // Nếu không tìm thấy pixel thuộc đối tượng nào trong mask, return true (đã biến mất)
+  return true;
 }
