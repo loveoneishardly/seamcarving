@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Seam Carving</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="../images/vnpt_icon.ico" type="image/x-icon">
+        <link href="../css/app_style.css" rel="stylesheet"/>
+        <link href="./css/card.css" rel="stylesheet"/>
+        <script type="text/javascript" src="../js/jquery-1.11.1.min.js"></script>
+    </head>
+    <style type="text/css">
+    </style>
+<body>
+    <div class="w3-container w3-green">
+        <h1>SEAM CARVING</h1> 
+    </div>
+    <div class="w3-container">
+        <div class="w3-col">
+            <div class="w3-col">
+                <table style="width: 100%; height: 100%;" border="0">
+                    <tr>
+                        <td>
+                            <input type="file" id="m_file_image"/>
+                            <input type="hidden" id="file_image"/>
+                            <button hidden="true" id="btn_readfile">Đọc file</button>
+                            <button id="btn_seam_removal">Seam-Carving Removal Object</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="w3-sub-container w3-sub-green">
+                                <h1>Hình ảnh</h1> 
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <img src="./upload/image.jpg" class="original" alt="Original" id="original" hidden="true">
+                            <canvas id="image_canvas"></canvas>
+                            <div class="image_original"> </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="w3-sub-container w3-sub-green">
+                                <h1>Ảnh Seam Carving</h1> 
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <div class="image_seamcarving"></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="../js/main.js"></script>
+</body>
+</html>
+

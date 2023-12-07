@@ -1,0 +1,15 @@
+{
+    "scripts": {
+        "start": "nodemon server.js"
+    },
+    "domain": "http://localhost:3000",
+    "title": "Trang chủ",
+    "logintitle": "Đăng nhập",
+    "logo": "",
+    "mail":{
+        "server":"minh123minh123minh123@gmail.com",
+        "port":465,
+        "username":"",
+        "password":""
+    }
+}
