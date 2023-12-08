@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Xóa đối tượng khỏi ảnh sử dụng Canvas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="text/javascript" src="../js/jquery-1.11.1.min.js"></script>
+</head>
+<body>
+  <canvas id="myCanvas" width="400" height="300"></canvas>
+
+  <script>
+    $(document).ready(function(){
+        var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+
+      // Vẽ đối tượng làm mask
+      context.fillStyle = 'black';
+      context.fillRect(50, 50, 100, 100); // Đây là một hình vuông đơn giản, bạn có thể vẽ đối tượng phức tạp hơn
+
+      // Lưu mask vào biến imageData
+      var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+      // Xóa đối tượng khỏi ảnh
+      function eraseObject() {
+        var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        var data = imageData.data;
+
+        // Kiểm tra từng pixel và xóa phần pixel tương ứng với mask
+        for (var i = 0; i < data.length; i += 4) {
+          if (data[i] === 0 && data[i + 1] === 0 && data[i + 2] === 0 && data[i + 3] === 255) {
+            // Nếu pixel hiện tại khớp với mask, xóa pixel đó
+            data[i + 3] = 0; // Đặt alpha thành 0 (xóa pixel)
+          }
+        }
+
+        // Đặt lại dữ liệu pixel sau khi xóa
+        context.putImageData(imageData, 0, 0);
+        
+        // Kiểm tra xem còn mask nào không
+        var hasMask = false;
+        for (var j = 0; j < data.length; j += 4) {
+          if (data[j] === 0 && data[j + 1] === 0 && data[j + 2] === 0 && data[j + 3] === 255) {
+            hasMask = true;
+            break;
+          }
+        }
+
+        // Nếu còn mask thì tiếp tục xóa, nếu không thì dừng lại
+        if (hasMask) {
+          setTimeout(eraseObject, 100); // Gọi lại hàm eraseObject sau một khoảng thời gian nhất định
+        }
+      }
+
+      eraseObject(); // Bắt đầu xóa đối tượng
+    });
+  </script>
+</body>
+</html>

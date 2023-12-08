@@ -15,6 +15,13 @@ module.exports = function(app, obj){
         });
     });
 
+    app.get("/test", function(req, res){
+        res.render("test", {
+            obj: obj,
+            i18n: res
+        });
+    });
+
     app.post('/readfileXML', function(req, res){
         res.redirect('/');
     });

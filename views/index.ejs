@@ -20,6 +20,29 @@
                 <table style="width: 100%; height: 100%;" border="0">
                     <tr>
                         <td>
+                            <div class="w3-sub-container w3-sub-green">
+                                <h1>Hình ảnh (ctx_original)</h1> 
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="center">
+                            <div class="image_original">
+                                <img src="./upload/image.jpg" class="original" alt="Original" id="original" hidden="true">
+                                <canvas id="image_canvas_original"></canvas>
+                                <!--<img src="./upload/image.jpg" class="original_display" alt="Original" id="original_display">-->
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="w3-sub-container w3-sub-green">
+                                <h1>Action</h1> 
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             <input type="file" id="m_file_image"/>
                             <input type="hidden" id="file_image"/>
                             <button hidden="true" id="btn_readfile">Đọc file</button>
@@ -29,22 +52,7 @@
                     <tr>
                         <td>
                             <div class="w3-sub-container w3-sub-green">
-                                <h1>Hình ảnh</h1> 
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td align="center">
-                            <div class="image_original">
-                                <img src="./upload/image.jpg" class="original" alt="Original" id="original" hidden="true">
-                                <img src="./upload/image.jpg" class="original_display" alt="Original" id="original_display">
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="w3-sub-container w3-sub-green">
-                                <h1>Ảnh Seam Carving</h1> 
+                                <h1>Ảnh Seam Carving (ctx)</h1> 
                             </div>
                         </td>
                     </tr>
@@ -59,22 +67,22 @@
                         <td>
                             <table style="width: 100%; height: 100%;" border="0">
                                 <tr>
-                                    <td style="width: 49%;">
+                                    <td style="width: 45%;">
                                         <div class="w3-sub-container w3-sub-green">
-                                            <h1>Enery Map</h1> 
+                                            <h1>Enery Map (ctx_enery)</h1> 
                                         </div>
                                     </td>
                                     <td>
                                         <div class="w3-sub-container w3-sub-green">
-                                            <h1>Seam Lowest Enery</h1> 
+                                            <h1>Seam Lowest Enery (ctx_seam_enery_lowest)</h1> 
                                         </div>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>
+                                    <td align="center">
                                         <canvas id="image_enerymap"></canvas>
                                     </td>
-                                    <td>
+                                    <td align="center">
                                         <canvas id="image_seam_lowest_enery"></canvas>
                                     </td>
                                 </tr>
