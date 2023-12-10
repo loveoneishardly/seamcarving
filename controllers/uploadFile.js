@@ -14,14 +14,14 @@ var upload = multer({
     fileFilter: function (req, file, cb) {
         console.log(file);
         if( file.mimetype == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-            file.mimetype=="image/jpg" || file.mimetype=="image/jpeg" || file.mimetype == "text/xml"
+            file.mimetype=="image/jpg" || file.mimetype=="image/jpeg" || file.mimetype == "text/xml" || file.mimetype=="image/png"
         ){
             cb(null, true)
         }else{
             return cb(new Error('only xml and excel!'))
         }
     }
-}).single("file_xml");
+}).single("file_image");
 
 
 module.exports = function(app, obj){

@@ -1,7 +1,3 @@
-const img = document.getElementById('original');
-const master_canvas = document.getElementById('image_canvas_original');
-const master_ctx = master_canvas.getContext('2d');
-
 let isDrawing = false;
 var maskData = []; // Lưu trữ thông tin về mask đã vẽ   
 
@@ -9,64 +5,24 @@ var maskData = []; // Lưu trữ thông tin về mask đã vẽ
 var newWidth  = 810;
 var newHeight  = 383;
 
-// Draw the image original
+var master_ctx;
+var ctx_enery;
+
+
+const img = document.getElementById('original');
+const master_canvas = document.getElementById('image_canvas_original');
+
+const canvas = document.getElementById('image_canvas');
+const ctx = canvas.getContext('2d');
+
 const canvas_original = document.getElementById('image_canvas_original');
 const ctx_original = canvas_original.getContext('2d');
 canvas_original.width = newWidth;
 canvas_original.height = newHeight;
 ctx_original.drawImage(img, 0, 0, newWidth, newHeight);
 
-// Draw the enery map
-const canvas_enery = document.getElementById('image_enerymap');
-const ctx_enery = canvas_enery.getContext('2d');
-canvas_enery.width = newWidth;
-canvas_enery.height = newHeight;
-
-// Draw the seam lowest enery map
-const canvas_seam_lowest_enery = document.getElementById('image_seam_lowest_enery');
-const ctx_seam_lowest_enery = canvas_seam_lowest_enery.getContext('2d');
-canvas_seam_lowest_enery.width = newWidth;
-canvas_seam_lowest_enery.height = newHeight;
-
-// Draw the image origonal in seam lowest enery map
-ctx_seam_lowest_enery.drawImage(img, 0, 0, newWidth, newHeight);
-
-// Draw the image on the canvas seamcarving
-const canvas = document.getElementById('image_canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = newWidth;
-canvas.height = newHeight;
-ctx.drawImage(img, 0, 0, newWidth, newHeight);
-
-// Event listener for when the mouse button is pressed down
-canvas_original.addEventListener('mousedown', (e) => {
-    isDrawing = true;
-    ctx_original.beginPath();
-    ctx_original.moveTo(e.clientX - canvas_original.getBoundingClientRect().left, e.clientY - canvas_original.getBoundingClientRect().top);
-});
-
-// Event listener for when the mouse is moved while holding the button down
-canvas_original.addEventListener('mousemove', (e) => {
-    if (isDrawing) {
-      ctx_original.lineTo(e.clientX - canvas_original.getBoundingClientRect().left, e.clientY - canvas_original.getBoundingClientRect().top);
-      ctx_original.lineWidth = 15; // Độ dày của nét vẽ
-      ctx_original.lineCap = 'round'; // Loại đầu nét vẽ
-      ctx_original.strokeStyle = 'red'; // Màu sắc nét vẽ
-      ctx_original.stroke();
-
-      // Lưu thông tin về mask đã vẽ
-      maskData.push({ x: e.clientX - canvas_original.getBoundingClientRect().left, y: e.clientY - canvas_original.getBoundingClientRect().top });
-    }
-});
-
-// Dừng vẽ khi chuột được nhả ra hoặc di chuyển ra khỏi canvas
-canvas_original.addEventListener('mouseup', function() {
-    isDrawing = false;
-});
-
-canvas_original.addEventListener('mouseout', function() {
-    isDrawing = false;
-});
+// Khởi tạo đối tượng gif
+var frames = [];
 
 $(document).ready(function(){
   $("#btn_seam_removal").click(function(){   
@@ -77,7 +33,7 @@ $(document).ready(function(){
     //result_check(points, ctx);
     var newMask = createMaskFromCoordinates(canvas.width, canvas.height, points);
     //console.log('Thực hiện seam carving dựa trên new mask:', newMask);
-    for (let i = 0; i < 150; i++){
+    for (let i = 0; i < 20; i++){
       var energyMap = calculateEnergyMapwithMask(ctx, newMask, canvas.width, canvas.height);
       // console.log('Vẽ enery map with mask:', energyMap);
       // drawEnergyMap(ctx_enery, energyMap, canvas.width, canvas.height);
@@ -85,12 +41,25 @@ $(document).ready(function(){
       //drawSeam(ctx_seam_lowest_enery, lowestEnerySeam, canvas.width, canvas.height);
       removeSeam(ctx, lowestEnerySeam, canvas.width, canvas.height, newMask);
     }
-    var energyMap = calculateEnergyMapwithMask(ctx, newMask, canvas.width, canvas.height);
+    console.log(frames);
+    // jQuery.ajax({
+    //   url: './generateGIF',
+    //   data: JSON.stringify({ frames: frames }),
+    //   cache: false,
+    //   contentType: false,
+    //   processData: false,
+    //   method: 'POST',
+    //   type: 'POST', // For jQuery < 1.9
+    //   success: function(data){
+    //       console.log(data);
+    //   }
+    // });
+    //var energyMap = calculateEnergyMapwithMask(ctx, newMask, canvas.width, canvas.height);
     // console.log('Vẽ enery map with mask:', energyMap);
     // drawEnergyMap(ctx_enery, energyMap, canvas.width, canvas.height);
-    var lowestEnerySeam = findLowestEnergySeam(energyMap, canvas.width, canvas.height);
+    //var lowestEnerySeam = findLowestEnergySeam(energyMap, canvas.width, canvas.height);
     //drawSeam(ctx_seam_lowest_enery, lowestEnerySeam, canvas.width, canvas.height);
-    removeSeam(ctx, lowestEnerySeam, canvas.width, canvas.height, newMask);
+    //removeSeam(ctx, lowestEnerySeam, canvas.width, canvas.height, newMask);
     // while (!result_check(points, ctx)) {
     // }
     //var energyMap = calculateEnergyMap(ctx, canvas.width, canvas.height);
@@ -101,8 +70,35 @@ $(document).ready(function(){
     //drawSeam(ctx_seam_lowest_enery, lowestEnerySeam, canvas.width, canvas.height);
     //removeSeam(ctx, lowestEnerySeam, canvas.width, canvas.height);
   });
-});
 
+  $("#m_file_image").change(function(){
+    $("#file_image").val("");
+    var data = new FormData();
+    jQuery.each(jQuery('#m_file_image')[0].files, function(i, file) {
+      data.append("file_image", file);
+    });
+
+    jQuery.ajax({
+      url: './uploadFile',
+      data: data,
+      cache: false,
+      contentType: false,
+      processData: false,
+      method: 'POST',
+      type: 'POST', // For jQuery < 1.9
+      success: function(data){
+          //console.log(data);
+          if(data.result){
+            $("#file_image").val(data.file);
+            $('#original').attr('src', './upload/' + data.file);
+            setTimeout(function () {
+              load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx_original, newWidth, newHeight);
+            }, 200);
+          }
+      }
+    });
+  });
+});
 // Hàm tính gradient của từng pixel
 function calculateGradient(imageData, x, y, width, height) {
   var pixelIndex = (x + y * width) * 4; // Chỉ số của pixel
@@ -248,6 +244,9 @@ function removeSeam(ctx, seam, canvasWidth, canvasHeight, newMask) {
   
   // Cập nhật ảnh mới sau khi xóa seam
   ctx.putImageData(imageData, 0, 0);
+
+  // Thêm frame mới cho gif từ canvas
+  frames.push(new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height));
 }
 
 // Helper function that returns the color of the pixel.
@@ -431,3 +430,60 @@ function result_check(point_mask, ctx) {
   console.log("Kiểm tra xong!");
   return check; // Trả về giá trị của biến check sau khi kiểm tra xong
 }
+
+function load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx_original, newWidth, newHeight){
+  master_ctx = master_canvas.getContext('2d');
+  // Draw the image original
+  ctx_original.drawImage(img, 0, 0, newWidth, newHeight);
+
+  // Draw the enery map
+  const canvas_enery = document.getElementById('image_enerymap');
+  ctx_enery = canvas_enery.getContext('2d');
+  canvas_enery.width = newWidth;
+  canvas_enery.height = newHeight;
+
+  // Draw the seam lowest enery map
+  const canvas_seam_lowest_enery = document.getElementById('image_seam_lowest_enery');
+  const ctx_seam_lowest_enery = canvas_seam_lowest_enery.getContext('2d');
+  canvas_seam_lowest_enery.width = newWidth;
+  canvas_seam_lowest_enery.height = newHeight;
+
+  // Draw the image origonal in seam lowest enery map
+  ctx_seam_lowest_enery.drawImage(img, 0, 0, newWidth, newHeight);
+
+  // Draw the image on the canvas seamcarving
+  canvas.width = newWidth;
+  canvas.height = newHeight;
+  ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+  // Event listener for when the mouse button is pressed down
+  canvas_original.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    ctx_original.beginPath();
+    ctx_original.moveTo(e.clientX - canvas_original.getBoundingClientRect().left, e.clientY - canvas_original.getBoundingClientRect().top);
+  });
+
+  // Event listener for when the mouse is moved while holding the button down
+  canvas_original.addEventListener('mousemove', (e) => {
+    if (isDrawing) {
+      ctx_original.lineTo(e.clientX - canvas_original.getBoundingClientRect().left, e.clientY - canvas_original.getBoundingClientRect().top);
+      ctx_original.lineWidth = 15; // Độ dày của nét vẽ
+      ctx_original.lineCap = 'round'; // Loại đầu nét vẽ
+      ctx_original.strokeStyle = 'red'; // Màu sắc nét vẽ
+      ctx_original.stroke();
+
+      // Lưu thông tin về mask đã vẽ
+      maskData.push({ x: e.clientX - canvas_original.getBoundingClientRect().left, y: e.clientY - canvas_original.getBoundingClientRect().top });
+    }
+  });
+
+  // Dừng vẽ khi chuột được nhả ra hoặc di chuyển ra khỏi canvas
+  canvas_original.addEventListener('mouseup', function() {
+    isDrawing = false;
+  });
+
+  canvas_original.addEventListener('mouseout', function() {
+    isDrawing = false;
+  });
+}
+
