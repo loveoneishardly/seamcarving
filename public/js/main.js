@@ -25,15 +25,20 @@ ctx_original.drawImage(img, 0, 0, newWidth, newHeight);
 var frames = [];
 
 $(document).ready(function(){
+  load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx_original, newWidth, newHeight);
   $("#btn_seam_removal").click(function(){   
     //console.log('Thực hiện seam carving dựa trên mask Coordinate:', maskData);
     var points = getAllDrawnPoints(ctx_original, maskData, 15);
-    //console.log('Các điểm thuộc mask: ',points);
+    var w_mask = find_bound_mask(points, 'w');
+    var h_mask = find_bound_mask(points, 'h');
+    console.log('Các điểm thuộc mask: ',points);
+    console.log('Width mask: ',w_mask);
+    console.log('Height mask: ',h_mask);
     //changePixelsUsingMask(ctx, points, canvas.width, canvas.height);
     //result_check(points, ctx);
     var newMask = createMaskFromCoordinates(canvas.width, canvas.height, points);
     //console.log('Thực hiện seam carving dựa trên new mask:', newMask);
-    for (let i = 0; i < 20; i++){
+    for (let i = 0; i < 150; i++){
       var energyMap = calculateEnergyMapwithMask(ctx, newMask, canvas.width, canvas.height);
       // console.log('Vẽ enery map with mask:', energyMap);
       // drawEnergyMap(ctx_enery, energyMap, canvas.width, canvas.height);
@@ -485,5 +490,29 @@ function load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx
   canvas_original.addEventListener('mouseout', function() {
     isDrawing = false;
   });
+}
+
+function find_bound_mask(point_mask, type){
+  // Tìm giá trị lớn nhất của x và y
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  let minX = Infinity;
+  let minY = Infinity;
+
+  point_mask.forEach(point => {
+      maxX = Math.max(maxX, point.x);
+      maxY = Math.max(maxY, point.y);
+      minX = Math.min(minX, point.x);
+      minY = Math.min(minY, point.y);
+  });
+
+  // Tính chiều rộng và chiều cao
+  const width = maxX - minX + 1;
+  const height = maxY - minY + 1;
+  if (type == 'w') {
+    return width;
+  } else {
+    return height;
+  }
 }
 
