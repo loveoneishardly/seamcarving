@@ -53,7 +53,7 @@ $(document).ready(function(){
     //removeSeam(ctx, lowestEnerySeam, canvas.width, canvas.height, newMask);
 
     //resize image with mask: delete object choose
-    for (let i = 0; i < w_mask + 50; i++){
+    for (let i = 0; i < w_mask + 80; i++){
       var energyMap = calculateEnergyMapwithMask(ctx, newMask, canvas.width, canvas.height);
       //console.log('Vẽ enery map with mask:', energyMap);
       //drawEnergyMap(ctx_enery, energyMap, canvas.width, canvas.height);
