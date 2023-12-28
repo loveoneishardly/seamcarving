@@ -8,6 +8,9 @@ var newHeight  = 383;
 var master_ctx;
 var ctx_enery;
 
+// Draw the seam lowest enery map
+const canvas_seam_lowest_enery = document.getElementById('image_seam_lowest_enery');
+const ctx_seam_lowest_enery = canvas_seam_lowest_enery.getContext('2d');
 
 const img = document.getElementById('original');
 const master_canvas = document.getElementById('image_canvas_original');
@@ -21,32 +24,47 @@ canvas_original.width = newWidth;
 canvas_original.height = newHeight;
 ctx_original.drawImage(img, 0, 0, newWidth, newHeight);
 
+//Draw mask image delete object
+const canvas_mask = document.getElementById('image_seam_mask');
+const ctx_mask = canvas_mask.getContext('2d');
+
 // Khởi tạo đối tượng gif
 var frames = [];
 
 $(document).ready(function(){
-  load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx_original, newWidth, newHeight);
+  load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx_original, newWidth, newHeight, canvas_seam_lowest_enery, ctx_seam_lowest_enery);
   $("#btn_seam_removal").click(function(){   
     //console.log('Thực hiện seam carving dựa trên mask Coordinate:', maskData);
     var points = getAllDrawnPoints(ctx_original, maskData, 15);
     var w_mask = find_bound_mask(points, 'w');
     var h_mask = find_bound_mask(points, 'h');
-    console.log('Các điểm thuộc mask: ',points);
-    console.log('Width mask: ',w_mask);
-    console.log('Height mask: ',h_mask);
-    //changePixelsUsingMask(ctx, points, canvas.width, canvas.height);
-    //result_check(points, ctx);
+    //console.log('Các điểm thuộc mask: ',points);
+    //console.log('Width mask: ',w_mask);
+    //console.log('Height mask: ',h_mask);
     var newMask = createMaskFromCoordinates(canvas.width, canvas.height, points);
+    //const maxwidth = getMaxWidthOfMaskInPixels(newMask);
     //console.log('Thực hiện seam carving dựa trên new mask:', newMask);
-    for (let i = 0; i < 150; i++){
+    //console.log('Maxwidth trên new mask:', maxwidth);
+    //resize image non mask
+    //var energyMap = calculateEnergyMap(ctx, canvas.width, canvas.height);
+    //drawEnergyMap(ctx_enery, energyMap, canvas.width, canvas.height);
+    //var lowestEnerySeam = findLowestEnergySeam(energyMap, canvas.width, canvas.height);
+    //drawSeam(ctx_seam_lowest_enery, lowestEnerySeam, canvas.width, canvas.height);
+    //removeSeam(ctx, lowestEnerySeam, canvas.width, canvas.height, newMask);
+
+    //resize image with mask: delete object choose
+    for (let i = 0; i < w_mask + 50; i++){
       var energyMap = calculateEnergyMapwithMask(ctx, newMask, canvas.width, canvas.height);
-      // console.log('Vẽ enery map with mask:', energyMap);
-      // drawEnergyMap(ctx_enery, energyMap, canvas.width, canvas.height);
+      //console.log('Vẽ enery map with mask:', energyMap);
+      //drawEnergyMap(ctx_enery, energyMap, canvas.width, canvas.height);
       var lowestEnerySeam = findLowestEnergySeam(energyMap, canvas.width, canvas.height);
       //drawSeam(ctx_seam_lowest_enery, lowestEnerySeam, canvas.width, canvas.height);
       removeSeam(ctx, lowestEnerySeam, canvas.width, canvas.height, newMask);
     }
     console.log(frames);
+
+    changePixelsUsingMask(ctx_mask, canvas_mask, points, canvas.width, canvas.height, newWidth, newHeight);
+    //result_check(points, ctx);
     // jQuery.ajax({
     //   url: './generateGIF',
     //   data: JSON.stringify({ frames: frames }),
@@ -97,7 +115,7 @@ $(document).ready(function(){
             $("#file_image").val(data.file);
             $('#original').attr('src', './upload/' + data.file);
             setTimeout(function () {
-              load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx_original, newWidth, newHeight);
+              load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx_original, newWidth, newHeight, canvas_seam_lowest_enery, ctx_seam_lowest_enery);
             }, 200);
           }
       }
@@ -274,7 +292,17 @@ const setPixel = (imgData, x, y, color) => {
   imgData.data[i + 3] = color[3]; // Alpha
 };
 
-function changePixelsUsingMask(ctx, mask, canvasWidth, canvasHeight) {
+function changePixelsUsingMask(ctx, canvas_mask, mask, canvasWidth, canvasHeight, Width, Height) {
+  canvas_mask.width = newWidth;
+  canvas_mask.height = newHeight;
+  ctx.lineWidth = 1;
+  ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+  ctx.strokeRect(0, 0, newWidth, newHeight);
+
+  // canvas_mask.width = Width;
+  // canvas_mask.height = Height;
+  // ctx.lineWidth = 5;
+  // ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
   // Lặp qua từng điểm ảnh trong mask
   mask.forEach(point => {
     const { x, y } = point;
@@ -285,8 +313,8 @@ function changePixelsUsingMask(ctx, mask, canvasWidth, canvasHeight) {
       const imageData = ctx.getImageData(x, y, 1, 1);
       const data = imageData.data;
 
-      // Thay đổi màu sắc của điểm ảnh
-      data[0] = 255; // R
+      // Thay đổi màu sắc của điểm ảnh của mask
+      data[0] = 0; // R
       data[1] = 0;   // G
       data[2] = 0;   // B
       data[3] = 255; // Alpha
@@ -296,6 +324,7 @@ function changePixelsUsingMask(ctx, mask, canvasWidth, canvasHeight) {
     }
   });
 }
+
 
 
 // Hàm lấy màu tại điểm pixel trên canvas
@@ -392,7 +421,7 @@ function createMaskFromCoordinates(width, height, coordinates) {
 
     // Đặt giá trị âm vô cùng lớn cho các pixel thuộc mask
     if (xCoord >= 0 && xCoord < width && yCoord >= 0 && yCoord < height) {
-      newMask[yCoord][xCoord] = -1;
+      newMask[yCoord][xCoord] = -999;
     }
   }
   return newMask;
@@ -436,7 +465,7 @@ function result_check(point_mask, ctx) {
   return check; // Trả về giá trị của biến check sau khi kiểm tra xong
 }
 
-function load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx_original, newWidth, newHeight){
+function load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx_original, newWidth, newHeight, canvas_seam_lowest_enery, ctx_seam_lowest_enery){
   master_ctx = master_canvas.getContext('2d');
   // Draw the image original
   ctx_original.drawImage(img, 0, 0, newWidth, newHeight);
@@ -448,8 +477,6 @@ function load_start_canvas(img, master_canvas, canvas, ctx, canvas_original, ctx
   canvas_enery.height = newHeight;
 
   // Draw the seam lowest enery map
-  const canvas_seam_lowest_enery = document.getElementById('image_seam_lowest_enery');
-  const ctx_seam_lowest_enery = canvas_seam_lowest_enery.getContext('2d');
   canvas_seam_lowest_enery.width = newWidth;
   canvas_seam_lowest_enery.height = newHeight;
 
@@ -516,3 +543,29 @@ function find_bound_mask(point_mask, type){
   }
 }
 
+
+function getMaxWidthOfMaskInPixels(mask) {
+  let maxWidth = 0;
+
+  // Duyệt qua từng hàng của mask để tìm chiều rộng lớn nhất
+  for (let y = 0; y < mask.length; y++) {
+      const row = mask[y];
+      let startPixel = -1;
+      
+      for (let x = 0; x < row.length; x++) {
+          // Nếu gặp giá trị -999, bắt đầu tính toán độ rộng
+          if (row[x] === -999) {
+              if (startPixel === -1) {
+                  startPixel = x; // Lưu vị trí bắt đầu
+              } else {
+                  const width = x - startPixel + 1; // Tính độ rộng tính từ vị trí bắt đầu
+                  maxWidth = Math.max(maxWidth, width);
+              }
+          } else {
+              startPixel = -1; // Reset vị trí bắt đầu nếu không phải giá trị -999
+          }
+      }
+  }
+
+  return maxWidth;
+}
